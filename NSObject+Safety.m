@@ -11,10 +11,6 @@
 
 static NSString *objKey     = @"obj";
 
-@interface NSObject ()
-
-@end
-
 @implementation NSObject (Safety)
 
 - (void)setObj:(id)obj {
@@ -23,7 +19,10 @@ static NSString *objKey     = @"obj";
 
 
 - (id)obj {
-    return objc_getAssociatedObject(self, &objKey);
+    id value = objc_getAssociatedObject(self, &valueKey);
+    self.value = nil;
+    return value;
+    
 }
 
 - (NSObject *  _Nullable (^)(NSString * _Nullable))objForKey {
@@ -32,15 +31,15 @@ static NSString *objKey     = @"obj";
             return [NSObject new];
         }
         
-        NSDictionary *dict = (NSDictionary *)self;
-        if (self.obj) {
-            dict = (NSDictionary *)self.obj;
+        NSDictionary *dict = (NSDictionary *)self.obj;
+        if (!dict) {
+            dict = (NSDictionary *)self;
         }
         if ([dict isKindOfClass:[NSDictionary class]]) {
-            self.obj = [dict objectForKey:key];
-            if ([self.obj isKindOfClass:[NSNull class]]) {
+            if ([[dict objectForKey:key] isKindOfClass:[NSNull class]]) {
                 return [NSObject new];
             }
+            self.obj = [dict objectForKey:key];
             return self;
         }
         return [NSObject new];
@@ -53,19 +52,19 @@ static NSString *objKey     = @"obj";
             return [NSObject new];
         }
         
-        NSArray *array = (NSArray *)self;
-        if (self.obj) {
-            array = (NSArray *)self.obj;
+        NSArray *array = (NSArray *)self.obj;
+        if (!array) {
+            array = (NSArray *)self;
         }
         if ([array isKindOfClass:[NSArray class]]) {
             if (array.count < index + 1) {
                 return [NSObject new];
             }
             
-            self.obj = [array objectAtIndex:index];
-            if ([self.obj isKindOfClass:[NSNull class]]) {
+            if ([[array objectAtIndex:index] isKindOfClass:[NSNull class]]) {
                 return [NSObject new];
             }
+            self.obj = [array objectAtIndex:index];
             return self;
         }
         return [NSObject new];
